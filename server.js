@@ -1,63 +1,36 @@
-import express from "express";
-import http from "http";
-import { WebSocketServer } from "ws";
-import path from "path";
-import { fileURLToPath } from "url";
+import express from 'express';
+import { WebSocketServer } from 'ws';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-// --------------------------------------------------
-// Правильный __dirname для ES Modules (Render friendly)
-// --------------------------------------------------
+const app = express();
+
+// Определяем __dirname для ES Modules (Render это любит)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --------------------------------------------------
-// Express + HTTP сервер
-// --------------------------------------------------
-const PORT = process.env.PORT || 3000;
-const app = express();
-const server = http.createServer(app);
+// Статические файлы из /public
+app.use(express.static(path.join(__dirname, 'public')));
 
-// --------------------------------------------------
-// WebSocket сервер
-// --------------------------------------------------
+const PORT = process.env.PORT || 10000;
+const server = app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// WebSocket
 const wss = new WebSocketServer({ server });
 
-wss.on("connection", (ws) => {
+wss.on('connection', ws => {
   console.log("Client connected");
 
-  ws.on("message", (data) => {
-    console.log("Message from client:", data.toString());
+  ws.on('message', msg => {
+    console.log("Message from client:", msg.toString());
 
-    // Рассылаем всем клиентам
-    wss.clients.forEach((client) => {
+    // Пересылаем сообщение ВСЕМ подключенным
+    wss.clients.forEach(client => {
       if (client.readyState === 1) {
-        client.send(data.toString());
+        client.send(msg.toString());
       }
     });
   });
-
-  ws.on("close", () => {
-    console.log("Client disconnected");
-  });
-});
-
-// --------------------------------------------------
-// Правильная раздача файла из папки public
-// --------------------------------------------------
-const PUBLIC_DIR = path.join(__dirname, "public");
-
-console.log("Serving static files from:", PUBLIC_DIR);
-
-app.use(express.static(PUBLIC_DIR));
-
-// если файл не найден — грузим index.html (для SPA и fallback)
-app.get("*", (req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, "index.html"));
-});
-
-// --------------------------------------------------
-// Start server
-// --------------------------------------------------
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
