@@ -1,12 +1,10 @@
 {
-  "name": "websocket-popup-demo",
+  "name": "webrtc-ws-demo",
   "version": "1.0.0",
-  "description": "Demo of WebSockets with popup interaction",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
+  "scripts": { "start": "node server.js" },
   "dependencies": {
-    "ws": "^8.18.0"
+    "express": "^4.18.2",
+    "ws": "^8.13.0"
   }
 }
