@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Client 2 (Синий)</title>
+<style>
+body {
+  background: #4d79ff;
+  font-family: sans-serif;
+  color: white;
+  padding: 20px;
+}
+button {
+  padding: 15px;
+  font-size: 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: white;
+  color: blue;
+}
+#log {
+  margin-top: 20px;
+  background: white;
+  color: black;
+  padding: 10px;
+  border-radius: 8px;
+}
+</style>
+</head>
+<body>
+<h1>Client 2 (Синий)</h1>
+
+<button onclick="sendMessage()">Отправить сообщение клиенту 1</button>
+
+<div id="log"></div>
+
+<script>
+const ws = new WebSocket(location.origin.replace('http', 'ws'));
+
+ws.onmessage = event => {
+  document.getElementById("log").innerHTML += "<p>Получено: " + event.data + "</p>";
+};
+
+function sendMessage() {
+  ws.send("Сообщение от СИНЕЙ страницы");
+}
+</script>
+
+</body>
+</html>
