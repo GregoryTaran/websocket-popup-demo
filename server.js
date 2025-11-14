@@ -1,47 +1,37 @@
-const http = require('http');
-const fs = require('fs');
-const WebSocket = require('ws');
-const path = require('path');
+const express = require("express");
+const path = require("path");
+const http = require("http");
+const WebSocket = require("ws");
 
-const PORT = process.env.PORT || 3000;
+const app = express();
 
-const server = http.createServer((req, res) => {
-    let filePath = '.' + req.url;
-    if (filePath === './') filePath = './client.html';
+// 📌 Папка public раздаётся автоматически
+app.use(express.static(path.join(__dirname, "public")));
 
-    const ext = path.extname(filePath);
-    const map = {
-        '.html': 'text/html',
-        '.js': 'text/javascript'
-    };
-
-    fs.readFile(filePath, (err, data) => {
-        if (err) {
-            res.writeHead(404);
-            return res.end("404 Not Found");
-        }
-        res.writeHead(200, { 'Content-Type': map[ext] || 'text/plain' });
-        res.end(data);
-    });
+// 📌 На корневой путь / отдаём public/client.html
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "client.html"));
 });
 
+// 📌 Настройка сервера HTTP
+const server = http.createServer(app);
+
+// 📌 WebSocket сервер
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', ws => {
-    console.log("Client connected");
+wss.on("connection", (ws) => {
+  console.log("Client connected");
 
-    ws.on('message', msg => {
-        console.log("Message from client:", msg.toString());
+  ws.on("message", (message) => {
+    console.log("Received:", message);
+  });
 
-        // Шлём ВСЕМ клиентам
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(msg.toString());
-            }
-        });
-    });
+  ws.send("Connected to WebSocket");
 });
 
+// 📌 Render PORT support
+const PORT = process.env.PORT || 10000;
+
 server.listen(PORT, () => {
-    console.log("Server running on port " + PORT);
+  console.log(`Server running on port ${PORT}`);
 });
